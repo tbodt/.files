@@ -292,7 +292,7 @@ augroup END
 
 augroup lang_detect
     autocmd!
-    autocmd BufRead,BufNewFile .eslintrc,.tern-project setfiletype json
+    autocmd BufRead,BufNewFile .babelrc,.eslintrc,.tern-project setfiletype json
     autocmd BufRead,BufNewFile *.S let b:asmsyntax = 'gas'
 augroup END
 

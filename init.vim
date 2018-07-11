@@ -151,6 +151,7 @@ nnoremap <silent> <c-p> :Files<cr>
 " async autocomplete
 Plug 'roxma/nvim-completion-manager'
 let g:cm_refresh_default_min_word_len = [[1,1]]
+let g:cm_complete_start_delay = 100
 PyRequire setproctitle psutil
 set completeopt=menuone,noinsert,noselect
 let g:cm_completeopt = &completeopt

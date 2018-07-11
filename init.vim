@@ -148,21 +148,27 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 nnoremap <silent> <c-p> :Files<cr>
 
-" async autocomplete
-Plug 'roxma/nvim-completion-manager'
-let g:cm_refresh_default_min_word_len = [[1,1]]
-let g:cm_complete_start_delay = 100
-PyRequire setproctitle psutil
-set completeopt=menuone,noinsert,noselect
-let g:cm_completeopt = &completeopt
+" autocomplete
+set completeopt=menu,noinsert,noselect
 set shortmess+=c
+let s:completer = 'deoplete'
+if s:completer ==# 'deoplete'
+    Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+	let g:deoplete#enable_at_startup = 1
+elseif s:completer ==# 'ncm'
+    Plug 'roxma/nvim-completion-manager'
+    let g:cm_refresh_default_min_word_len = [[1,1]]
+    let g:cm_complete_start_delay = 100
+    PyRequire setproctitle psutil
+    let g:cm_completeopt = &completeopt
+    imap <c-space> <plug>(cm_force_refresh)
+endif
 " press tab for the next match
 inoremap <expr> <tab> pumvisible() ? "\<c-n>" : "\<tab>"
 inoremap <expr> <s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
 inoremap <expr> <c-y> pumvisible() ? "\<c-e><c-y>" : "\<c-y>"
 inoremap <expr> <c-e> pumvisible() ? "\<c-e><c-e>" : "\<c-e>"
 inoremap <expr> <cr> pumvisible() ? "\<c-y><cr>" : "\<cr>"
-imap <c-space> <plug>(cm_force_refresh)
 
 Plug 'Shougo/neco-vim'
 " Plug 'roxma/nvim-cm-tern'
@@ -260,6 +266,7 @@ let g:netrw_winsize = 25
 " LANGUAGES {{{
 
 let g:c_syntax_for_h = 1
+let g:vim_indent_cont = &sw
 Plug 'dag/vim-fish', {'for': 'fish'}
 Plug 'raimon49/requirements.txt.vim'
 Plug 'hynek/vim-python-pep8-indent'

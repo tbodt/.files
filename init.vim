@@ -53,9 +53,6 @@ endfunction
 
 function! LightlineFilename()
     let fname = expand('%:~:.')
-    if fname ==# expand('%:p')
-        let fname = expand('%:t')
-    endif
     if fname ==# ''
         let fname = '[No Name]'
     endif

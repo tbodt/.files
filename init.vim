@@ -156,12 +156,12 @@ if s:completer ==# 'deoplete'
     Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 	let g:deoplete#enable_at_startup = 1
 elseif s:completer ==# 'ncm'
-    Plug 'roxma/nvim-completion-manager'
-    let g:cm_refresh_default_min_word_len = [[1,1]]
-    let g:cm_complete_start_delay = 100
-    PyRequire setproctitle psutil
-    let g:cm_completeopt = &completeopt
-    imap <c-space> <plug>(cm_force_refresh)
+    Plug 'ncm2/ncm2'
+    Plug 'roxma/nvim-yarp'
+    autocmd BufEnter * call ncm2#enable_for_buffer()
+    let g:ncm2#complete_delay = 1000
+    let g:ncm2#popup_delay = 1000
+    imap <c-space> <plug>(ncm2_manual_trigger)
 endif
 " press tab for the next match
 inoremap <expr> <tab> pumvisible() ? "\<c-n>" : "\<tab>"

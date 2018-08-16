@@ -22,34 +22,28 @@ Defer colorscheme Tomorrow-Night
 " lightline {{{
 Plug 'itchyny/lightline.vim'
 let g:lightline = {
-            \ 'component_function': {
-            \   'mode': 'LightlineMode',
-            \   'filename': 'LightlineFilename',
-            \   'readonly': 'LightlineReadonly',
-            \   'modified': 'LightlineModified',
-            \   'fileformat': 'LightlineFileformat',
-            \   'fileencoding': 'LightlineFileencoding',
-            \   'filetype': 'LightlineFiletype',
-            \ },
-            \ 'component': {
-            \   'filename': '%f',
-            \ },
-            \ 'active': {
-            \   'right': [['lineinfo'],
-            \             ['percent'],
-            \             ['filetype', 'fileformat', 'fileencoding']],
-            \ },
-            \ 'tabline': {
-            \   'right': [[]],
-            \ },
-            \ }
-
-function! LightlineReadonly()
-    return &modifiable ? '' : ''
-endfunction
-function! LightlineModified()
-    return &modified ? '•' : ''
-endfunction
+        \ 'colorscheme': 'Tomorrow_Night',
+        \ 'component_function': {
+        \   'filename': 'LightlineFilename',
+        \ },
+        \ 'component': {
+        \   'modified': "%{&modified ? '•' : ''}",
+        \   'readonly': "%{&readonly ? '': ''}",
+        \ },
+        \ 'component_visible_condition': {
+        \   'filetype': 'winwidth(0) >= 70',
+        \   'fileencoding': 'winwidth(0) >= 70',
+        \   'fileformat': 'winwidth(0) >= 70',
+        \ },
+        \ 'active': {
+        \   'right': [['lineinfo'],
+        \             ['percent'],
+        \             ['filetype', 'fileencoding', 'fileformat']],
+        \ },
+        \ 'tabline': {
+        \   'right': [[]],
+        \ },
+        \ }
 
 function! LightlineFilename()
     let fname = expand('%:~:.')
@@ -58,22 +52,7 @@ function! LightlineFilename()
     endif
     return fname
 endfunction
-function! LightlineMode()
-    return lightline#mode()
-endfunction
 
-function! LightlineFiletype()
-    if winwidth(0) < 70 | return '' | endif
-    return &ft != '' ? &ft : 'no ft'
-endfunction
-function! LightlineFileformat()
-    if winwidth(0) < 70 | return '' | endif
-    return &fileformat
-endfunction
-function! LightlineFileencoding()
-    if winwidth(0) < 70 | return '' | endif
-    return &fileencoding
-endfunction
 " }}}
 
 " search
@@ -138,15 +117,15 @@ xnoremap <silent> . :normal .<cr>
 " IDE {{{
 
 " nothing works if you don't have python
-Plug 'roxma/python-support.nvim'
+Plug 'roxma/python-support.nvim',
+let g:python_support_python2_require = 0
 let g:python_support_python3_requirements = []
 command! -nargs=* PyRequire
             \ call extend(g:python_support_python3_requirements, [<f-args>])
 
 " fzf: fuzzy finder
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-nnoremap <silent> <c-p> :Files<cr>
+nnoremap <silent> <c-p> :FZF<cr>
 
 " autocomplete
 set completeopt=menu,noinsert,noselect
@@ -154,7 +133,7 @@ set shortmess+=c
 let s:completer = 'deoplete'
 if s:completer ==# 'deoplete'
     Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-	let g:deoplete#enable_at_startup = 1
+    let g:deoplete#enable_at_startup = 1
 elseif s:completer ==# 'ncm'
     Plug 'ncm2/ncm2'
     Plug 'roxma/nvim-yarp'
@@ -170,7 +149,7 @@ inoremap <expr> <c-y> pumvisible() ? "\<c-e><c-y>" : "\<c-y>"
 inoremap <expr> <c-e> pumvisible() ? "\<c-e><c-e>" : "\<c-e>"
 inoremap <expr> <cr> pumvisible() ? "\<c-y><cr>" : "\<cr>"
 
-Plug 'Shougo/neco-vim'
+"Plug 'Shougo/neco-vim'
 " Plug 'roxma/nvim-cm-tern'
 
 Plug 'autozimu/LanguageClient-neovim', { 'branch': 'next', 'do': 'bash install.sh' }
@@ -220,7 +199,7 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-abolish'
-Plug 'tpope/vim-unimpaired'
+"Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-eunuch'
 Plug 'rking/ag.vim'
@@ -231,8 +210,6 @@ Plug 'wellle/targets.vim'
 Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-entire'
 Plug 'kana/vim-textobj-indent'
-Plug 'kana/vim-textobj-syntax'
-Plug 'kana/vim-textobj-function'
 
 Plug 'Olical/vim-enmasse'
 Plug 'chaoren/vim-wordmotion'
@@ -246,7 +223,7 @@ let g:wordmotion_mappings = {
             \ }
 Plug 'tommcdo/vim-exchange'
 
-Plug 'PeterRincker/vim-argumentative'
+"Plug 'PeterRincker/vim-argumentative'
 
 " italics
 Defer let &t_ZH="\e[3m"
@@ -287,8 +264,22 @@ Plug 'justinmk/vim-syntax-extra' " improved yacc/lex/c
 Plug 'shogas/vim-ion'
 set rtp+=~/llvm/utils/vim
 
-Plug 'jamessan/vim-gnupg'
+Plug 'jamessan/vim-gnupg', {'on': []}
 let g:GPGUseAgent = 0
+" hacks to make this plugin lazy load, thanks blueyed
+let g:GPGFilePattern = '*.\(gpg\|asc\|pgp\)'
+function! s:autoload_gnupg(aucmd)
+    augroup MyGnuPG
+        au!
+    augroup END
+    call plug#load('vim-gnupg')
+    exe 'doautocmd' a:aucmd
+endfunction
+augroup MyGnuPG
+    autocmd!
+    autocmd BufReadCmd *.\(gpg\|asc\|pgp\) call s:autoload_gnupg('BufReadCmd')
+    autocmd FileReadCmd *.\(gpg\|asc\|pgp\) call s:autoload_gnupg('FileReadCmd')
+augroup END
 
 augroup langs
     autocmd!
@@ -358,9 +349,9 @@ set autowriteall
 
 " best. idea. ever.
 " PyRequire pyaudio
-Plug 'timeyyy/orchestra.nvim'
-Plug 'timeyyy/clackclack.symphony'
-Defer call orchestra#prelude()
+" Plug 'timeyyy/orchestra.nvim'
+" Plug 'timeyyy/clackclack.symphony'
+" Defer call orchestra#prelude()
 " Defer call orchestra#set_tune('clackclack')
 
 " gitgutter
@@ -375,7 +366,7 @@ let g:localvimrc_persistent = 2
 let g:localvimrc_reverse = 1
 let g:localvimrc_event = ['BufWinEnter', 'BufRead']
 
-Plug 'wakatime/vim-wakatime'
+"Plug 'wakatime/vim-wakatime'
 Plug 'haya14busa/vim-debugger'
 Plug 'junegunn/vader.vim'
 

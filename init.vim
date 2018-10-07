@@ -112,6 +112,10 @@ nnoremap <silent> & :&&<cr>
 xnoremap <silent> & :&&<cr>
 xnoremap <silent> . :normal .<cr>
 
+" good stuff from unimpaired
+nnoremap <silent> ]q :cnext<cr>
+nnoremap <silent> [q :cprev<cr>
+
 " nnoremap <expr> gv "`[".getregtype()[0]."`]"
 " }}} 
 " IDE {{{
@@ -263,6 +267,7 @@ Plug 'tpope/vim-markdown'
 Plug 'justinmk/vim-syntax-extra' " improved yacc/lex/c
 Plug 'shogas/vim-ion'
 set rtp+=~/llvm/utils/vim
+Plug 'ziglang/zig.vim'
 
 Plug 'jamessan/vim-gnupg', {'on': []}
 let g:GPGUseAgent = 0
@@ -281,11 +286,16 @@ augroup MyGnuPG
     autocmd FileReadCmd *.\(gpg\|asc\|pgp\) call s:autoload_gnupg('FileReadCmd')
 augroup END
 
+let g:xml_syntax_folding = 1
 augroup langs
     autocmd!
     autocmd FileType vim setlocal foldmethod=marker
     autocmd FileType python iabbrev <buffer> bpoint from celery.contrib import rdb;rdb.set_trace()
     autocmd FileType markdown setlocal foldmethod=manual
+    autocmd FileType fzf set laststatus=0 noshowmode noruler
+            \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+    autocmd FileType zig setlocal cindent cinoptions=L0
+    autocmd FileType xml setlocal foldmethod=syntax
 augroup END
 
 augroup lang_detect
@@ -366,7 +376,7 @@ let g:localvimrc_persistent = 2
 let g:localvimrc_reverse = 1
 let g:localvimrc_event = ['BufWinEnter', 'BufRead']
 
-"Plug 'wakatime/vim-wakatime'
+Plug 'wakatime/vim-wakatime'
 Plug 'haya14busa/vim-debugger'
 Plug 'junegunn/vader.vim'
 
@@ -374,6 +384,7 @@ set undofile
 " }}}
 " WHY I USED TO HATE VIM {{{
 " Backups can be nice but are mostly useless because of autosave
+set backup
 set backupdir=~/.vim-tmp
 " Swapfiles are 100% useless for recovery because autosave, so put them on a
 " ram disk

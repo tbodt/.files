@@ -138,6 +138,8 @@ let s:completer = 'deoplete'
 if s:completer ==# 'deoplete'
     Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
     let g:deoplete#enable_at_startup = 1
+    inoremap <expr> <c-space> deoplete#refresh()
+    Plug 'tbodt/deoplete-tabnine', { 'do': './install.sh' }
 elseif s:completer ==# 'ncm'
     Plug 'ncm2/ncm2'
     Plug 'roxma/nvim-yarp'
@@ -152,6 +154,7 @@ inoremap <expr> <s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
 inoremap <expr> <c-y> pumvisible() ? "\<c-e><c-y>" : "\<c-y>"
 inoremap <expr> <c-e> pumvisible() ? "\<c-e><c-e>" : "\<c-e>"
 inoremap <expr> <cr> pumvisible() ? "\<c-y><cr>" : "\<cr>"
+
 
 "Plug 'Shougo/neco-vim'
 " Plug 'roxma/nvim-cm-tern'

@@ -96,6 +96,7 @@ nnoremap <c-j> <c-w><c-j>
 nnoremap <c-k> <c-w><c-k>
 nnoremap <c-l> <c-w><c-l>
 nnoremap <c-h> <c-w><c-h>
+nnoremap <c-v><c-l> <c-l>
 
 " operator-pending
 onoremap J j
@@ -267,6 +268,7 @@ Plug 'justinmk/vim-syntax-extra' " improved yacc/lex/c
 Plug 'shogas/vim-ion'
 set rtp+=~/llvm/utils/vim
 Plug 'ziglang/zig.vim'
+Plug 'LnL7/vim-nix'
 
 Plug 'jamessan/vim-gnupg', {'on': []}
 let g:GPGUseAgent = 0
@@ -294,7 +296,6 @@ augroup langs
     autocmd FileType fzf set laststatus=0 noshowmode noruler
             \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
     autocmd FileType zig setlocal cindent cinoptions=L0
-    autocmd FileType xml setlocal foldmethod=syntax
 augroup END
 
 augroup lang_detect

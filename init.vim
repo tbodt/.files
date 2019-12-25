@@ -78,8 +78,6 @@ set nostartofline
 set list
 set listchars=tab:»\ ,trail:●
 
-Plug 'yuttie/comfortable-motion.vim'
-
 " }}}
 " MAPPINGS {{{
 let mapleader = "\<space>"
@@ -130,6 +128,10 @@ command! -nargs=* PyRequire
 " fzf: fuzzy finder
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 nnoremap <silent> <c-p> :FZF<cr>
+let g:fzf_action = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-s': 'split',
+  \ 'ctrl-v': 'vsplit' }
 
 " autocomplete
 set completeopt=menu,noinsert,noselect
@@ -190,12 +192,6 @@ augroup lsp-langs
         execute 'autocmd FileType' lang 'call s:lsp_map()'
     endfor
 augroup END
-
-" Tags
-Plug 'ludovicchabant/vim-gutentags'
-let g:gutentags_define_advanced_commands = 1
-let g:gutentags_file_list_command = "ag --follow --nocolor --nogroup -g ''"
-let g:gutentags_project_root = ['.tags']
 
 PyRequire websockets
 PyRequire remote-pdb
@@ -305,12 +301,13 @@ augroup lang_detect
     autocmd!
     autocmd BufRead,BufNewFile .babelrc,.eslintrc,.tern-project setfiletype json
     autocmd BufRead,BufNewFile *.S let b:asmsyntax = 'gas'
+    autocmd BufRead,BufNewFile changelog.txt setfiletype text
 augroup END
 
 set cinoptions=l1,N-s
 
-" Spaces. Four of them.
-set tabstop=4
+" the one true indent config
+set softtabstop=-1
 set shiftwidth=4
 set expandtab
 Plug 'editorconfig/editorconfig-vim' " ok fine

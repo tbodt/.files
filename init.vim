@@ -98,6 +98,8 @@ nnoremap <c-l> <c-w><c-l>
 nnoremap <c-h> <c-w><c-h>
 nnoremap <c-v><c-l> <c-l>
 
+nnoremap <c-s> <c-l>
+
 " operator-pending
 onoremap J j
 onoremap K k
@@ -124,20 +126,21 @@ Plug 'roxma/python-support.nvim',
 let g:python_support_python2_require = 0
 let g:python_support_python3_requirements = []
 command! -nargs=* PyRequire
-            \ call extend(g:python_support_python3_requirements, [<f-args>])
+        \ call extend(g:python_support_python3_requirements, [<f-args>])
 
 " fzf: fuzzy finder
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 nnoremap <silent> <c-p> :FZF<cr>
 let g:fzf_action = {
-  \ 'ctrl-t': 'tab split',
-  \ 'ctrl-s': 'split',
-  \ 'ctrl-v': 'vsplit' }
+        \ 'ctrl-t': 'tab split',
+        \ 'ctrl-s': 'split',
+        \ 'ctrl-v': 'vsplit',
+        \ }
 
 " autocomplete
+let s:completer = 'coc'
 set completeopt=menu,noinsert,noselect
 set shortmess+=c
-let s:completer = 'deoplete'
 if s:completer ==# 'deoplete'
     Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
     let g:deoplete#enable_at_startup = 1
@@ -150,6 +153,21 @@ elseif s:completer ==# 'ncm'
     let g:ncm2#complete_delay = 1000
     let g:ncm2#popup_delay = 1000
     imap <c-space> <plug>(ncm2_manual_trigger)
+elseif s:completer ==# 'coc'
+    Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+    highlight link CocErrorVirtualText ErrorMsg
+    Defer command! -nargs=1 -bar CocAction call CocAction(<q-args>)
+    command! -nargs=1 -bar CocActionSplit call CocAction(<q-args>, <q-mods>.' split')
+    function! s:coc_action(provider, action, vim_action, ...)
+        if !CocHasProvider(a:provider)
+            return a:vim_action
+        endif
+        return ":call CocAction('".a:action."', '".get(a:, 1, '')."')\<cr>"
+    endfunction
+    nnoremap <silent> <expr> <c-]> <sid>coc_action('definition', 'jumpDefinition', "\<c-]>")
+    nnoremap <silent> <expr> <c-w><c-]> <sid>coc_action('definition', 'jumpDefinition', "\<c-]>", 'split')
+    nnoremap <silent> <expr> K <sid>coc_action('hover', 'doHover', "K")
+    "let g:coc_node_args = ['--nolazy', '--inspect=6045']
 endif
 " press tab for the next match
 inoremap <expr> <tab> pumvisible() ? "\<c-n>" : "\<tab>"
@@ -157,42 +175,41 @@ inoremap <expr> <s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
 inoremap <expr> <c-y> pumvisible() ? "\<c-e><c-y>" : "\<c-y>"
 inoremap <expr> <c-e> pumvisible() ? "\<c-e><c-e>" : "\<c-e>"
 inoremap <expr> <cr> pumvisible() ? "\<c-y><cr>" : "\<cr>"
+if s:completer ==# 'coc'
+    inoremap <expr> <cr> pumvisible() ? "\<c-y>" : "\<cr>"
+    inoremap <expr> <tab> pumvisible() ? "\<c-n>" : coc#jumpable() ? coc#rpc#request('snippetNext', []) : "\<tab>"
+    inoremap <expr> <s-tab> pumvisible() ? "\<c-p>" : coc#jumpable() ? coc#rpc#request('snippetPrev', []) : "\<s-tab>"
+    snoremap <expr> <tab> coc#jumpable() ? coc#rpc#request('snippetNext', []) : "\<tab>"
+    snoremap <expr> <s-tab> coc#jumpable() ? coc#rpc#request('snippetPrev', []) : "\<s-tab>"
+endif
 
-
-"Plug 'Shougo/neco-vim'
-" Plug 'roxma/nvim-cm-tern'
-
-Plug 'autozimu/LanguageClient-neovim', { 'branch': 'next', 'do': 'bash install.sh' }
-let g:LanguageClient_serverCommands = {
-            \ 'c': ['clangd'],
-            \ 'cpp': ['clangd'],
-            \ 'python': ['pyls'],
-            \ 'javascript.jsx': ['node', '/Users/tbodt/Developer/projects/js-langserver/index.js', '--stdio'],
-            \ 'json': ['json-languageserver', '--stdio'],
-            \ 'css': ['css-languageserver', '--stdio'],
-            \ 'html': ['html-languageserver', '--stdio'],
-            \ }
-let g:LanguageClient_settingsPath = expand('~/.config/nvim/settings.json')
-let g:LanguageClient_selectionUI = 'location-list'
-let g:LanguageClient_diagnosticsDisplay = {
-            \ 1: {"signText": "🛑"},
+if index(['coc'], s:completer) < 0
+    Plug 'autozimu/LanguageClient-neovim', { 'branch': 'next', 'do': 'bash install.sh' }
+    let g:LanguageClient_settingsPath = expand('~/.config/nvim/settings.json')
+    let g:LanguageClient_selectionUI = 'location-list'
+    let g:LanguageClient_diagnosticsDisplay = {
+            \ 1: {"signText": "🛑", "virtualTexthl": "ErrorMsg"},
             \ 2: {"signText": "⚠️"},
             \ 3: {"signText": "ℹ️"},
             \ }
-let g:LanguageClient_diagnosticsList = v:null
-function! s:lsp_map()
-    nnoremap <buffer> <silent> <c-\> :<c-u>call LanguageClient#textDocument_references()<cr>
-    nnoremap <buffer> <silent> <c-]> :<c-u>call LanguageClient#textDocument_definition()<cr>
-    nnoremap <buffer> <silent> K :<c-u>call LanguageClient#textDocument_hover()<cr>
-    " setlocal formatexpr=LanguageClient#textDocument_rangeFormatting()
-    " setlocal formatoptions=
-endfunction
-augroup lsp-langs
-    autocmd!
-    for lang in keys(g:LanguageClient_serverCommands)
-        execute 'autocmd FileType' lang 'call s:lsp_map()'
-    endfor
-augroup END
+    let g:LanguageClient_diagnosticsList = 'Location'
+    function! s:lsp_map()
+        nnoremap <buffer> <silent> <c-\> :<c-u>call LanguageClient#textDocument_references()<cr>
+        nnoremap <buffer> <silent> <c-]> :<c-u>call LanguageClient#textDocument_definition()<cr>
+        nnoremap <buffer> <silent> K :<c-u>call LanguageClient#textDocument_hover()<cr>
+        " setlocal formatexpr=LanguageClient#textDocument_rangeFormatting()
+        " setlocal formatoptions=
+    endfunction
+    let g:LanguageClient_serverStderr = '/tmp/clangderr-stderr.log'
+    " SAVE ME
+    noremap <f9> :<c-u>LanguageClientStop<cr>
+    noremap <f10> :<c-u>LanguageClientStart<cr>
+    inoremap <f9> <c-o>:<c-u>LanguageClientStop<cr>
+    inoremap <f10> <c-o>:<c-u>LanguageClientStart<cr>
+else
+    function! s:lsp_map()
+    endfunction
+endif
 
 PyRequire websockets
 PyRequire remote-pdb
@@ -206,7 +223,7 @@ Plug 'tpope/vim-abolish'
 "Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-eunuch'
-Plug 'rking/ag.vim'
+Plug 'tpope/vim-obsession'
 Plug 'mbbill/undotree', {'on': 'UndotreeToggle'}
 nnoremap <silent> <leader>u :UndotreeToggle<cr>
 
@@ -218,13 +235,13 @@ Plug 'kana/vim-textobj-indent'
 Plug 'Olical/vim-enmasse'
 Plug 'chaoren/vim-wordmotion'
 let g:wordmotion_mappings = {
-            \ 'w' : '<a-w>',
-            \ 'b' : '<a-b>',
-            \ 'e' : '<a-e>',
-            \ 'ge' : 'g<a-e>',
-            \ 'aw' : 'a<a-w>',
-            \ 'iw' : 'i<a-w>'
-            \ }
+        \ 'w' : '<a-w>',
+        \ 'b' : '<a-b>',
+        \ 'e' : '<a-e>',
+        \ 'ge' : 'g<a-e>',
+        \ 'aw' : 'a<a-w>',
+        \ 'iw' : 'i<a-w>'
+        \ }
 Plug 'tommcdo/vim-exchange'
 
 "Plug 'PeterRincker/vim-argumentative'
@@ -296,6 +313,8 @@ augroup langs
     autocmd FileType fzf set laststatus=0 noshowmode noruler
             \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
     autocmd FileType zig setlocal cindent cinoptions=L0
+    autocmd FileType go setlocal noexpandtab shiftwidth=8
+    autocmd BufWritePre *.go :call CocAction('runCommand', 'editor.action.organizeImport')
 augroup END
 
 augroup lang_detect
@@ -326,9 +345,9 @@ augroup myautocommands
     autocmd FocusLost,BufLeave * nested silent! update
     " jump to the last cursor position when reading a file
     autocmd BufReadPost *
-                \ if line("'\"") >= 1 && line("'\"") <= line("$") |
-                \   exe "normal! g`\"" |
-                \ endif
+            \ if line("'\"") >= 1 && line("'\"") <= line("$") |
+            \   exe "normal! g`\"" |
+            \ endif
     autocmd BufReadPre *.bin setlocal binary
 
     autocmd QuickFixCmdPost [^l]* nested cwindow
@@ -336,7 +355,8 @@ augroup myautocommands
 augroup END
 
 Plug 'blueyed/vim-qf_resize'
-set grepprg=rg\ -n
+set grepprg=rg\ --no-heading\ --with-filename\ --line-number\ --color\ never
+command! -nargs=* -complete=file Ag if <q-args> == '' | grep! <cword> | else | grep! <args> | endif | cwindow | redraw!
 set shellpipe=>
 
 function! Tail()
@@ -366,7 +386,13 @@ set autowriteall
 " Defer call orchestra#set_tune('clackclack')
 
 " gitgutter
-Plug 'airblade/vim-gitgutter'
+Plug 'mhinz/vim-signify'
+Defer highlight DiffAdd cterm=bold ctermbg=none
+Defer highlight DiffChange cterm=bold ctermbg=none
+Defer highlight DiffDelete cterm=bold ctermbg=none
+let g:signify_sign_change = '~'
+let g:signify_sign_delete = '-'
+"let g:signify_realtime = 1
 
 " todo
 Plug 'machakann/vim-highlightedyank'
@@ -375,11 +401,12 @@ Plug 'christianrondeau/vimcastle', {'on': 'Vimcastle'}
 Plug 'embear/vim-localvimrc'
 let g:localvimrc_persistent = 2
 let g:localvimrc_reverse = 1
-let g:localvimrc_event = ['BufWinEnter', 'BufRead']
+let g:localvimrc_event = ['BufWinEnter']
 
 Plug 'wakatime/vim-wakatime'
 Plug 'haya14busa/vim-debugger'
 Plug 'junegunn/vader.vim'
+Plug 'powerman/vim-plugin-AnsiEsc'
 
 set undofile
 " }}}

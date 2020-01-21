@@ -1,0 +1,26 @@
+{
+    "diagnostic.errorSign": "🛑",
+    "diagnostic.refreshOnInsertMode": true,
+    "diagnostic.virtualText": true,
+    "diagnostic.messageTarget": "echo",
+    "diagnostic.checkCurrentLine": true,
+
+    "suggest.triggerAfterInsertEnter": true,
+
+    "languageserver": {
+        "clangd": {
+            "command": "clangd",
+            "args": ["-log=verbose", "-clang-tidy=false", "-background-index=false"],
+            "filetypes": ["c", "cpp"],
+            "rootPatterns": [".compile_commands.json"],
+        },
+        "gopls": {
+            "command": "gopls",
+            "filetypes": ["go"],
+            "rootPatterns": ["go.mod", ".vim/", ".git/", ".hg/"],
+            "initializationOptions": {
+                "usePlaceholders": true,
+            },
+        },
+    },
+}

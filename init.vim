@@ -343,6 +343,7 @@ augroup myautocommands
     " autocmd BufWritePost,FileWritePost $MYVIMRC nested source $MYVIMRC
     " autosaving
     autocmd FocusLost,BufLeave * nested silent! update
+    autocmd FocusGained * checktime
     " jump to the last cursor position when reading a file
     autocmd BufReadPost *
             \ if line("'\"") >= 1 && line("'\"") <= line("$") |

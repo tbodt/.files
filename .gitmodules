@@ -1,0 +1,3 @@
+[submodule "talon/knausj_talon"]
+	path = talon/knausj_talon
+	url = https://github.com/tbodt/knausj_talon

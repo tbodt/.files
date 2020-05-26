@@ -1,4 +1,4 @@
-mode: sleep
+mode: all
 -
-history: user.history_toggle()
-<phrase>: ""
+wake up: speech.enable()
+snore: speech.disable()

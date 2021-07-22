@@ -13,6 +13,9 @@ endfunction
 command! -nargs=1 Defer call <sid>defer(<q-args>)
 " }}}
 
+" despite my best efforts, fish still takes 50-100ms to start
+set shell=/bin/bash
+
 call plug#begin()
 
 " UI {{{
@@ -78,6 +81,9 @@ set nostartofline
 set list
 set listchars=tab:»\ ,trail:●
 
+Plug 'psliwka/vim-smoothie'
+let g:smoothie_base_speed = 20
+
 " }}}
 " MAPPINGS {{{
 let mapleader = "\<space>"
@@ -124,18 +130,20 @@ nnoremap <silent> [q :cprev<cr>
 " nothing works if you don't have python
 Plug 'roxma/python-support.nvim',
 let g:python_support_python2_require = 0
+let g:python3_host_prog = 'python3'
 let g:python_support_python3_requirements = []
 command! -nargs=* PyRequire
         \ call extend(g:python_support_python3_requirements, [<f-args>])
 
 " fzf: fuzzy finder
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-nnoremap <silent> <c-p> :FZF<cr>
+nnoremap <c-p> :FZF<cr>
 let g:fzf_action = {
         \ 'ctrl-t': 'tab split',
         \ 'ctrl-s': 'split',
         \ 'ctrl-v': 'vsplit',
         \ }
+let g:fzf_layout = {'down': '30%'}
 
 " autocomplete
 let s:completer = 'coc'
@@ -220,10 +228,11 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-abolish'
-"Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-fugitive'
+set previewheight=30
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-obsession'
+Plug 'tpope/vim-rsi'
 Plug 'mbbill/undotree', {'on': 'UndotreeToggle'}
 nnoremap <silent> <leader>u :UndotreeToggle<cr>
 
@@ -373,6 +382,14 @@ function! Tail()
 endfunction
 command! Tail call Tail()
 
+" obsession obsession
+let s:reading_from_stdin = 0
+augroup obsobs
+    autocmd!
+    autocmd StdinReadPre * let s:reading_from_stdin = 1
+    autocmd VimEnter * if argc() == 0 && !s:reading_from_stdin && filereadable("session.vim") | source session.vim | endif
+augroup END
+
 set autoread
 set autowrite
 set autowriteall
@@ -388,12 +405,12 @@ set autowriteall
 
 " gitgutter
 Plug 'mhinz/vim-signify'
-Defer highlight DiffAdd cterm=bold ctermbg=none
-Defer highlight DiffChange cterm=bold ctermbg=none
-Defer highlight DiffDelete cterm=bold ctermbg=none
 let g:signify_sign_change = '~'
 let g:signify_sign_delete = '-'
-"let g:signify_realtime = 1
+augroup my_signify
+    autocmd!
+    autocmd User SignifyAutocmds exe 'autocmd! signify | autocmd signify TextChanged,InsertLeave * call sy#start()'
+augroup END
 
 " todo
 Plug 'machakann/vim-highlightedyank'
@@ -404,7 +421,6 @@ let g:localvimrc_persistent = 2
 let g:localvimrc_reverse = 1
 let g:localvimrc_event = ['BufWinEnter']
 
-Plug 'wakatime/vim-wakatime'
 Plug 'haya14busa/vim-debugger'
 Plug 'junegunn/vader.vim'
 Plug 'powerman/vim-plugin-AnsiEsc'

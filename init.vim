@@ -11,6 +11,13 @@ function! s:run_deferred()
     endfor
 endfunction
 command! -nargs=1 Defer call <sid>defer(<q-args>)
+lua <<EOF
+table = require('table')
+deferred = {}
+function defer(f)
+    table.insert(deferred, f)
+end
+EOF
 " }}}
 
 " despite my best efforts, fish still takes 50-100ms to start
@@ -19,13 +26,13 @@ set shell=/bin/bash
 call plug#begin()
 
 " UI {{{
-Plug 'flazz/vim-colorschemes'
-Defer colorscheme Tomorrow-Night
+Plug 'tbodt/vim-colors-tbodt'
+Defer colorscheme bare
 
 " lightline {{{
 Plug 'itchyny/lightline.vim'
 let g:lightline = {
-        \ 'colorscheme': 'Tomorrow_Night',
+        \ 'colorscheme': 'bare',
         \ 'component_function': {
         \   'filename': 'LightlineFilename',
         \ },
@@ -55,6 +62,14 @@ function! LightlineFilename()
     endif
     return fname
 endfunction
+
+function! s:lightline_colorscheme(colorscheme)
+    let g:lightline.colorscheme = a:colorscheme
+    call lightline#init()
+    call lightline#colorscheme()
+    call lightline#update()
+endfunction
+command! -nargs=1 LightlineColorscheme call <sid>lightline_colorscheme(<q-args>)
 
 " }}}
 
@@ -145,82 +160,40 @@ let g:fzf_action = {
         \ }
 let g:fzf_layout = {'down': '30%'}
 
+" lsp
+Plug 'neovim/nvim-lspconfig'
+lua << EOF
+defer(function()
+require'lspconfig'.clangd.setup{}
+vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+  vim.lsp.diagnostic.on_publish_diagnostics, {
+    update_in_insert = true,
+  }
+)
+end)
+EOF
+sign define LspDiagnosticsSignError text=🛑 texthl=LspDiagnosticsSignError linehl= numhl=
+sign define LspDiagnosticsSignWarning text=⚠️" texthl=LspDiagnosticsSignWarning linehl= numhl=
+sign define LspDiagnosticsSignInformation text=ℹ️" texthl=LspDiagnosticsSignInformation linehl= numhl=
+
 " autocomplete
-let s:completer = 'coc'
-set completeopt=menu,noinsert,noselect
-set shortmess+=c
-if s:completer ==# 'deoplete'
-    Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-    let g:deoplete#enable_at_startup = 1
-    inoremap <expr> <c-space> deoplete#refresh()
-    Plug 'tbodt/deoplete-tabnine', { 'do': './install.sh' }
-elseif s:completer ==# 'ncm'
-    Plug 'ncm2/ncm2'
-    Plug 'roxma/nvim-yarp'
-    autocmd BufEnter * call ncm2#enable_for_buffer()
-    let g:ncm2#complete_delay = 1000
-    let g:ncm2#popup_delay = 1000
-    imap <c-space> <plug>(ncm2_manual_trigger)
-elseif s:completer ==# 'coc'
-    Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
-    highlight link CocErrorVirtualText ErrorMsg
-    Defer command! -nargs=1 -bar CocAction call CocAction(<q-args>)
-    command! -nargs=1 -bar CocActionSplit call CocAction(<q-args>, <q-mods>.' split')
-    function! s:coc_action(provider, action, vim_action, ...)
-        if !CocHasProvider(a:provider)
-            return a:vim_action
-        endif
-        return ":call CocAction('".a:action."', '".get(a:, 1, '')."')\<cr>"
-    endfunction
-    nnoremap <silent> <expr> <c-]> <sid>coc_action('definition', 'jumpDefinition', "\<c-]>")
-    nnoremap <silent> <expr> <c-w><c-]> <sid>coc_action('definition', 'jumpDefinition', "\<c-]>", 'split')
-    nnoremap <silent> <expr> K <sid>coc_action('hover', 'doHover', "K")
-    "let g:coc_node_args = ['--nolazy', '--inspect=6045']
-endif
+Plug 'hrsh7th/nvim-compe'
+set completeopt=menuone,noselect
+let g:compe = {}
+let g:compe.enabled = v:true
+let g:compe.source = {
+        \ 'path': v:true,
+        \ 'buffer': v:true,
+        \ 'nvim_lsp': v:true,
+        \ 'throttle_time': 0,
+        \ }
 " press tab for the next match
 inoremap <expr> <tab> pumvisible() ? "\<c-n>" : "\<tab>"
 inoremap <expr> <s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
 inoremap <expr> <c-y> pumvisible() ? "\<c-e><c-y>" : "\<c-y>"
 inoremap <expr> <c-e> pumvisible() ? "\<c-e><c-e>" : "\<c-e>"
-inoremap <expr> <cr> pumvisible() ? "\<c-y><cr>" : "\<cr>"
-if s:completer ==# 'coc'
-    inoremap <expr> <cr> pumvisible() ? "\<c-y>" : "\<cr>"
-    inoremap <expr> <tab> pumvisible() ? "\<c-n>" : coc#jumpable() ? coc#rpc#request('snippetNext', []) : "\<tab>"
-    inoremap <expr> <s-tab> pumvisible() ? "\<c-p>" : coc#jumpable() ? coc#rpc#request('snippetPrev', []) : "\<s-tab>"
-    snoremap <expr> <tab> coc#jumpable() ? coc#rpc#request('snippetNext', []) : "\<tab>"
-    snoremap <expr> <s-tab> coc#jumpable() ? coc#rpc#request('snippetPrev', []) : "\<s-tab>"
-endif
+inoremap <expr> <cr> compe#confirm('<cr>')
 
-if index(['coc'], s:completer) < 0
-    Plug 'autozimu/LanguageClient-neovim', { 'branch': 'next', 'do': 'bash install.sh' }
-    let g:LanguageClient_settingsPath = expand('~/.config/nvim/settings.json')
-    let g:LanguageClient_selectionUI = 'location-list'
-    let g:LanguageClient_diagnosticsDisplay = {
-            \ 1: {"signText": "🛑", "virtualTexthl": "ErrorMsg"},
-            \ 2: {"signText": "⚠️"},
-            \ 3: {"signText": "ℹ️"},
-            \ }
-    let g:LanguageClient_diagnosticsList = 'Location'
-    function! s:lsp_map()
-        nnoremap <buffer> <silent> <c-\> :<c-u>call LanguageClient#textDocument_references()<cr>
-        nnoremap <buffer> <silent> <c-]> :<c-u>call LanguageClient#textDocument_definition()<cr>
-        nnoremap <buffer> <silent> K :<c-u>call LanguageClient#textDocument_hover()<cr>
-        " setlocal formatexpr=LanguageClient#textDocument_rangeFormatting()
-        " setlocal formatoptions=
-    endfunction
-    let g:LanguageClient_serverStderr = '/tmp/clangderr-stderr.log'
-    " SAVE ME
-    noremap <f9> :<c-u>LanguageClientStop<cr>
-    noremap <f10> :<c-u>LanguageClientStart<cr>
-    inoremap <f9> <c-o>:<c-u>LanguageClientStop<cr>
-    inoremap <f10> <c-o>:<c-u>LanguageClientStart<cr>
-else
-    function! s:lsp_map()
-    endfunction
-endif
-
-PyRequire websockets
-PyRequire remote-pdb
 " }}}
 " EDITOR {{{
 
@@ -441,5 +414,6 @@ call plug#end()
 filetype plugin indent on
 syntax on
 call s:run_deferred()
+lua for i, f in ipairs(deferred) do f() end
 set secure " exrc should do nothing risky
 " }}}

@@ -103,6 +103,9 @@ let g:smoothie_base_speed = 20
 " MAPPINGS {{{
 let mapleader = "\<space>"
 
+" wtf nvim!!!
+unmap Y
+
 "" insert
 " line autocomplete
 inoremap <c-l> <c-x><c-l>

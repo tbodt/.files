@@ -165,6 +165,7 @@ Plug 'neovim/nvim-lspconfig'
 lua << EOF
 defer(function()
 require'lspconfig'.clangd.setup{}
+require'lspconfig'.gopls.setup{}
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
   vim.lsp.diagnostic.on_publish_diagnostics, {
     update_in_insert = true,
@@ -172,6 +173,7 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
 )
 end)
 EOF
+nnoremap <silent> <c-]> <cmd>lua vim.lsp.buf.definition()<cr>
 sign define LspDiagnosticsSignError text=🛑 texthl=LspDiagnosticsSignError linehl= numhl=
 sign define LspDiagnosticsSignWarning text=⚠️" texthl=LspDiagnosticsSignWarning linehl= numhl=
 sign define LspDiagnosticsSignInformation text=ℹ️" texthl=LspDiagnosticsSignInformation linehl= numhl=
@@ -296,7 +298,7 @@ augroup langs
             \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
     autocmd FileType zig setlocal cindent cinoptions=L0
     autocmd FileType go setlocal noexpandtab shiftwidth=8
-    autocmd BufWritePre *.go :call CocAction('runCommand', 'editor.action.organizeImport')
+    autocmd BufWritePre *.go lua vim.lsp.buf.formatting()
 augroup END
 
 augroup lang_detect

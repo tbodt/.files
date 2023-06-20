@@ -1,3 +1,9 @@
 [submodule "talon/knausj_talon"]
 	path = talon/knausj_talon
 	url = https://github.com/tbodt/knausj_talon
+[submodule "talon/talon-axkit"]
+	path = talon/talon-axkit
+	url = https://github.com/phillco/talon-axkit
+[submodule "talon/rango-talon"]
+	path = talon/rango-talon
+	url = https://github.com/david-tejada/rango-talon

@@ -1,4 +1,4 @@
-from talon import Module, actions
+from talon import Context, Module, actions
 
 mod = Module()
 @mod.action_class
@@ -10,6 +10,8 @@ class VimActions:
         actions.insert(',' + command)
         actions.key('enter')
 
+
+mod.tag('vim', 'tag to load vim and/or related plugins!')
 
 ctx = Context()
 ctx.matches = """
@@ -23,3 +25,7 @@ class VimEditActions:
         actions.user.vim_command('write')
     def save_all():
         actions.user.vim_command('wall')
+    def undo():
+        actions.user.vim_command('undo')
+    def redo():
+        actions.user.vim_command('redo')

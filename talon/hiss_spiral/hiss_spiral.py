@@ -144,8 +144,3 @@ class WeirdActions:
     def noise_hiss_stop():
         actions.user.crosshairs_stop()
 
-    def noise_pop():
-        actions.user.racer_gas_toggle()
-
-
-

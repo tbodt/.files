@@ -4,4 +4,4 @@ grep: "rg "
 space left: key(ctrl-left)
 space right: key(ctrl-right)
 wheel: user.mouse_gaze_scroll()
-face(raise_eyebrows): user.mouse_action()
+face(stick_out_tongue): core.repeat_phrase()

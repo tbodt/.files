@@ -8,7 +8,6 @@ class Actions:
         """"""
         if actions.tracking.control_zoom_enabled():
             actions.tracking.zoom()
-        else:
-            actions.user.noise_trigger_pop()
+        actions.user.noise_trigger_pop()
 
 

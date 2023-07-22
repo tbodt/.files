@@ -25,5 +25,5 @@ def hiss_handler(active):
     else:
         actions.user.noise_hiss_stop()
 
-noise.register("pop", pop_handler)
+#noise.register("pop", pop_handler)
 noise.register("hiss", hiss_handler)

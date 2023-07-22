@@ -10,7 +10,6 @@ class VimActions:
         actions.insert(',' + command)
         actions.key('enter')
 
-
 mod.tag('vim', 'tag to load vim and/or related plugins!')
 
 ctx = Context()

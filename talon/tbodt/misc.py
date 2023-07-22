@@ -1,4 +1,5 @@
 from talon import Module, actions
+from talon_plugins import eye_zoom_mouse
 
 mod = Module()
 
@@ -11,3 +12,4 @@ class Actions:
         actions.user.noise_trigger_pop()
 
 
+eye_zoom_mouse.config.live = True

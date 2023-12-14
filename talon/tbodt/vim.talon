@@ -4,23 +4,16 @@ and win.title: /vim/
 
 tag(): user.vim
 
-escape:
-    key(escape)
-    sleep(50ms)
+(escape | normal): user.vim_to_normal()
 
 vim close:
     user.vim_command("quit")
 
-fuzz: key(ctrl-p)
-vim left:
-    key(ctrl-w)
-    key(h)
-vim right:
-    key(ctrl-w)
-    key(l)
-vim up:
-    key(ctrl-w)
-    key(k)
-vim down:
-    key(ctrl-w)
-    key(j)
+fuzz: user.vim_normal("ctrl-p")
+vim left: user.vim_normal("ctrl-w h")
+vim right: user.vim_normal("ctrl-w l")
+vim up: user.vim_normal("ctrl-w k")
+vim down: user.vim_normal("ctrl-w j")
+
+go back: user.vim_normal("ctrl-o")
+go forward: user.vim_normal("ctrl-i")

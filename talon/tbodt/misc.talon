@@ -6,3 +6,8 @@ space right: key(ctrl-right)
 wheel: user.mouse_gaze_scroll()
 face(stick_out_tongue): core.repeat_phrase()
 ^system sleep$: user.system_command('pmset sleepnow')
+
+^mixed mode$:
+    mode.disable("sleep")
+    mode.enable("dictation")
+    mode.enable("command")

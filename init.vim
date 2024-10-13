@@ -182,22 +182,60 @@ sign define LspDiagnosticsSignWarning text=⚠️" texthl=LspDiagnosticsSignWarn
 sign define LspDiagnosticsSignInformation text=ℹ️" texthl=LspDiagnosticsSignInformation linehl= numhl=
 
 " autocomplete
-Plug 'hrsh7th/nvim-compe'
-set completeopt=menuone,noselect
-let g:compe = {}
-let g:compe.enabled = v:true
-let g:compe.source = {
-        \ 'path': v:true,
-        \ 'buffer': v:true,
-        \ 'nvim_lsp': v:true,
-        \ 'throttle_time': 0,
-        \ }
-" press tab for the next match
-inoremap <expr> <tab> pumvisible() ? "\<c-n>" : "\<tab>"
-inoremap <expr> <s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
-inoremap <expr> <c-y> pumvisible() ? "\<c-e><c-y>" : "\<c-y>"
-inoremap <expr> <c-e> pumvisible() ? "\<c-e><c-e>" : "\<c-e>"
-inoremap <expr> <cr> compe#confirm('<cr>')
+Plug 'hrsh7th/nvim-cmp'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'L3MON4D3/LuaSnip'
+Plug 'saadparwaiz1/cmp_luasnip'
+lua << EOF
+defer(function()
+local cmp = require 'cmp'
+local luasnip = require 'luasnip'
+cmp.setup{
+    snippet = {
+      expand = function(args)
+        luasnip.lsp_expand(args.body)
+      end,
+    },
+    mapping = {
+        ['<cr>'] = cmp.mapping.confirm({select = false}),
+        ['<c-space>'] = cmp.mapping.complete(),
+        ['<tab>'] = function(fallback)
+            if cmp.visible() then cmp.select_next_item()
+            elseif luasnip.expand_or_jumpable() then luasnip.expand_or_jump()
+            else fallback()
+            end
+        end,
+        ['<s-tab>'] = function(fallback)
+            if cmp.visible() then cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then luasnip.jump(-1)
+            else fallback()
+            end
+        end,
+    },
+    completeopt = 'menuone,noselect',
+    sources = {
+        { name = 'nvim_lsp' },
+    },
+}
+end)
+--let g:compe = {}
+--let g:compe.enabled = v:true
+--let g:compe.source = {
+        --\ 'path': v:true,
+        --\ 'buffer': v:true,
+        --\ 'nvim_lsp': v:true,
+        --\ 'throttle_time': 0,
+        --\ }
+-- press tab for the next match
+function _G.last_char_is_space()
+    local col = vim.fn.col('.') - 1
+    if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then return false else return true end
+end
+EOF
+"inoremap <expr> <tab> pumvisible() ? "\<c-n>" : v:lua.last_char_is_space() ? compe#complete() : "\<tab>"
+"inoremap <expr> <s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
+"inoremap <expr> <c-y> pumvisible() ? "\<c-e><c-y>" : "\<c-y>"
+"inoremap <expr> <c-e> pumvisible() ? "\<c-e><c-e>" : "\<c-e>"
 
 " }}}
 " EDITOR {{{

@@ -1,5 +1,6 @@
 from talon import Module, actions
 from talon.plugins import eye_zoom_mouse
+from talon.types import Point2d
 
 mod = Module()
 
@@ -13,3 +14,4 @@ class Actions:
 
 
 eye_zoom_mouse.config.live = True
+eye_zoom_mouse.config.screen_area = Point2d(100,100)

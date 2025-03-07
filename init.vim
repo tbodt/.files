@@ -96,15 +96,16 @@ set nostartofline
 set list
 set listchars=tab:»\ ,trail:●
 
-Plug 'psliwka/vim-smoothie'
-let g:smoothie_base_speed = 20
+Plug 'dstein64/nvim-scrollview', {'branch': 'main'}
+highlight ScrollView ctermbg=8
+let g:scrollview_column = 1
 
 " }}}
 " MAPPINGS {{{
 let mapleader = "\<space>"
 
 " wtf nvim!!!
-unmap Y
+silent! unmap Y
 
 "" insert
 " line autocomplete
@@ -174,9 +175,10 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
     update_in_insert = true,
   }
 )
+vim.keymap.set('n', '<Leader>r', vim.lsp.buf.rename)
+vim.keymap.set('n', '<ctrl-\\>', vim.lsp.buf.references)
 end)
 EOF
-nnoremap <silent> <c-]> <cmd>lua vim.lsp.buf.definition()<cr>
 sign define LspDiagnosticsSignError text=🛑 texthl=LspDiagnosticsSignError linehl= numhl=
 sign define LspDiagnosticsSignWarning text=⚠️" texthl=LspDiagnosticsSignWarning linehl= numhl=
 sign define LspDiagnosticsSignInformation text=ℹ️" texthl=LspDiagnosticsSignInformation linehl= numhl=
@@ -237,6 +239,47 @@ EOF
 "inoremap <expr> <c-y> pumvisible() ? "\<c-e><c-y>" : "\<c-y>"
 "inoremap <expr> <c-e> pumvisible() ? "\<c-e><c-e>" : "\<c-e>"
 
+Plug 'mfussenegger/nvim-dap'
+Plug 'nvim-neotest/nvim-nio'
+Plug 'rcarriga/nvim-dap-ui'
+lua << EOF
+defer(function()
+local dap = require'dap'
+dap.adapters.php = {
+  type = 'executable',
+  command = 'node',
+  args = { '/Users/tbodt/.local/share/nvim/plugged/nvim-dap/dap/vscode-php-debug/out/phpDebug.js' }
+}
+
+dap.configurations.php = {
+  {
+    type = 'php',
+    request = 'launch',
+    name = 'Listen for Xdebug',
+    port = 9003
+  }
+}
+
+local dapui = require("dapui")
+require("dapui").setup()
+dap.listeners.after.event_initialized["dapui_config"] = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated["dapui_config"] = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited["dapui_config"] = function()
+  dapui.close()
+end
+
+vim.keymap.set('n', '<Leader>b', function() require('dap').toggle_breakpoint() end)
+vim.keymap.set('n', '<Leader>c', function() require('dap').continue() end)
+vim.keymap.set('n', '<Leader>n', function() require('dap').step_over() end)
+vim.keymap.set('n', '<Leader>s', function() require('dap').step_into() end)
+vim.keymap.set('n', '<Leader>f', function() require('dap').step_out() end)
+
+end)
+EOF
 " }}}
 " EDITOR {{{
 
@@ -257,7 +300,7 @@ Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-entire'
 Plug 'kana/vim-textobj-indent'
 
-Plug 'Olical/vim-enmasse'
+Plug 'stefandtw/quickfix-reflector.vim'
 Plug 'chaoren/vim-wordmotion'
 let g:wordmotion_mappings = {
         \ 'w' : '<a-w>',
@@ -339,7 +382,7 @@ augroup langs
             \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
     autocmd FileType zig setlocal cindent cinoptions=L0
     autocmd FileType go setlocal noexpandtab shiftwidth=8
-    autocmd BufWritePre *.go lua vim.lsp.buf.formatting()
+    autocmd BufWritePre *.go lua vim.lsp.buf.format()
 augroup END
 
 augroup lang_detect
@@ -347,6 +390,7 @@ augroup lang_detect
     autocmd BufRead,BufNewFile .babelrc,.eslintrc,.tern-project setfiletype json
     autocmd BufRead,BufNewFile *.S let b:asmsyntax = 'gas'
     autocmd BufRead,BufNewFile changelog.txt setfiletype text
+    autocmd BufRead,BufNewFile *.suml setfiletype yaml
 augroup END
 
 set cinoptions=l1,N-s
@@ -381,7 +425,7 @@ augroup myautocommands
 augroup END
 
 Plug 'blueyed/vim-qf_resize'
-set grepprg=rg\ --no-heading\ --with-filename\ --line-number\ --color\ never
+set grepprg=rg\ --no-heading\ --with-filename\ --line-number\ --column\ --color\ never
 command! -nargs=* -complete=file Ag if <q-args> == '' | grep! <cword> | else | grep! <args> | endif | cwindow | redraw!
 set shellpipe=>
 

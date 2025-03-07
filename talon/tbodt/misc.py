@@ -1,5 +1,5 @@
 from talon import Module, actions
-from talon_plugins import eye_zoom_mouse
+from talon.plugins import eye_zoom_mouse
 
 mod = Module()
 
